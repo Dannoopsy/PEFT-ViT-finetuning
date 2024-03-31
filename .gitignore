@@ -1,0 +1,8 @@
+*.ipynb_checkpoints
+*vit-base-beans
+*__pycache__*
+*.log
+*.pkl
+*.zip
+*DS_Store
+*MACOSX*
