@@ -1,0 +1,11 @@
+data:
+  dset_name: beans
+  output_dir: ./vit-base-beans
+training:
+  metric_name: accuracy
+  batch_size: 16
+  epochs: 4
+  learning_rate: 0.0002
+  optimizer: adam
+model:
+  model_name: google/vit-base-patch16-224-in21k

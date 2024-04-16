@@ -6,7 +6,7 @@ name = "PEFT-ViT-finetuning"
 version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
-    "torch==2.0.1", "torchvision==0.15.2",
+    "torch==2.0.1", "torchvision==0.15.2", "hydra-core==1.3",
     "transformers==4.38.2", "tokenizers==0.15.2", "sentencepiece==0.1.99", "shortuuid",
     "accelerate==0.28.0", "peft==0.9.0", "bitsandbytes==0.41.0",
     "pydantic<2,>=1", "markdown2[all]", "numpy", "scikit-learn==1.2.2",
