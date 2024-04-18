@@ -1,0 +1,21 @@
+data:
+  dset_name: cifar10
+  output_dir: ./vit-base-beans
+training:
+  metric_name: accuracy
+  batch_size: 16
+  epochs: 1
+  learning_rate: 0.0002
+  optimizer: adam
+model:
+  model_name: google/vit-base-patch16-224-in21k
+peft:
+  r: 16
+  lora_alpha: 16
+  target_modules:
+  - query
+  - value
+  lora_dropout: 0.1
+  bias: none
+  modules_to_save:
+  - classifier
