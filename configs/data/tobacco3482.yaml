@@ -1,0 +1,7 @@
+dset_name: maveriq/tobacco3482
+img_name: image
+label_name: label
+test_size: 0.2
+is_gray: True
+test_name: test
+output_dir: ./vit-base-beans

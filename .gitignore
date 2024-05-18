@@ -6,3 +6,6 @@
 *.zip
 *DS_Store
 *MACOSX*
+outputs/
+wandb/
+visual/

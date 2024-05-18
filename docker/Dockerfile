@@ -6,8 +6,9 @@ RUN apt-get -y install sudo
 RUN apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev liblzma-dev -y
 RUN wget https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tgz && tar -xf Python-3.11.3.tgz && cd Python-3.11.3 && ./configure --enable-optimizations && echo Y | make -j 12 && sudo make altinstall
 RUN apt-get install git -y
+RUN sudo ln -s /usr/local/bin/python3.11 /usr/bin/python
+RUN sudo ln -s /usr/local/bin/pip3.11 /usr/bin/pip
 
-
-RUN pip3.11 install --upgrade pip
+RUN pip install --upgrade pip
 # && pip3.11 install flash-attn --no-build-isolation
 RUN apt-get install vim -y

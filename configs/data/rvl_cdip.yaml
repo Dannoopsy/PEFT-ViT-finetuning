@@ -1,0 +1,7 @@
+dset_name: aharley/rvl_cdip
+img_name: image
+label_name: label
+test_size: 0
+is_gray: True
+test_name: validation
+output_dir: ./vit-base-beans

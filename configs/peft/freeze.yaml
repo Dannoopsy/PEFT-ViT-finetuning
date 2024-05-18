@@ -1,0 +1,2 @@
+peft_type: freeze
+n_layers_no_freeze: 0

@@ -1,0 +1,7 @@
+dset_name: cifar10
+img_name: img
+label_name: label
+test_size: 0
+is_gray: False
+test_name: test
+output_dir: ./vit-base-beans

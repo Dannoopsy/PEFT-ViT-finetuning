@@ -8,23 +8,11 @@ from datasets import load_metric
 from transformers import TrainingArguments
 from transformers import Trainer
 from peft import LoraConfig, get_peft_model
+import wandb
+import omegaconf
+from omegaconf import DictConfig, OmegaConf
+from data_utils import collate_fn, compute_metrics, transform
 
-
-def collate_fn(batch):
-    return {
-        'pixel_values': torch.stack([x['pixel_values'] for x in batch]),
-        'labels': torch.tensor([x['labels'] for x in batch])
-    }
-def compute_metrics(p, metric):
-    ans = metric.compute(predictions=np.argmax(p.predictions, axis=1), references=p.label_ids)
-    return ans
-def transform(example_batch, processor):
-    # Take a list of PIL images and turn them to pixel values
-    inputs = processor([x for x in example_batch['img']], return_tensors='pt')
-
-    # Don't forget to include the labels!
-    inputs['labels'] = example_batch['label']
-    return inputs
 
 def print_trainable_parameters(model):
     trainable_params = 0
@@ -38,6 +26,12 @@ def print_trainable_parameters(model):
     )
 
 def train(cfg):
+    config_dict = OmegaConf.to_container(cfg, resolve=True)
+    wandb.init(
+        project="VIT PEFT", config=config_dict
+    )
+
+    
     model_name = cfg.model.model_name
     dset_name = cfg.data.dset_name
     metric_name = cfg.training.metric_name
@@ -45,13 +39,20 @@ def train(cfg):
     batch_size = cfg.training.batch_size
     epochs = cfg.training.epochs
     learning_rate = cfg.training.learning_rate
+    scheduler = cfg.training.scheduler
+    
     
     metric = load_metric(metric_name)
     ds = load_dataset(dset_name)
-    prepared_ds = ds.with_transform(lambda x :transform(x, processor))
+    if cfg.data.test_size > 0:
+        ds = ds['train'].train_test_split(test_size=cfg.data.test_size)
+    
+    prepared_ds = ds.with_transform(lambda x :transform(x, processor, cfg.data.img_name, cfg.data.label_name, cfg.data.is_gray))
 
-    labels = ds['train'].features['label'].names
+    labels = ds['train'].features[cfg.data.label_name].names
     processor = ViTImageProcessor.from_pretrained(model_name)
+    
+    
     
     model = ViTForImageClassification.from_pretrained(
         model_name,
@@ -60,17 +61,29 @@ def train(cfg):
         label2id={c: str(i) for i, c in enumerate(labels)}
     )
     
-    if cfg.model.peft_type == 'none':
+    
+    if cfg.peft.peft_type == 'none':
         pass
-    elif cfg.model.peft_type == 'lora':
+    
+    elif cfg.peft.peft_type == 'freeze':
+        for p in model.parameters():
+            p.requires_grad = False
+        for p in model.classifier.parameters():
+            p.requires_grad = True
+        if cfg.peft.n_layers_no_freeze > 0:
+            for p in model.vit.layernorm.parameters():
+                p.requires_grad = True
+        for i in range(len(model.vit.encoder.layer) - cfg.peft.n_layers_no_freeze, len(model.vit.encoder.layer)):
+            for p in model.vit.encoder.layer[i].parameters():
+                p.requires_grad = True
+        
+    elif cfg.peft.peft_type == 'lora':
         lora_cfg = dict(cfg.peft)
         lora_cfg['modules_to_save'] = list(lora_cfg['modules_to_save'])
         lora_cfg['target_modules'] = list(lora_cfg['target_modules'])
         config = LoraConfig(**lora_cfg)
         model = get_peft_model(model, config)
         print_trainable_parameters(model)
-    
-
     
     training_args = TrainingArguments(
       output_dir=output_dir,
@@ -89,6 +102,7 @@ def train(cfg):
       load_best_model_at_end=True,
       report_to='wandb',
       label_names=["labels"],
+      lr_scheduler_type=scheduler
     )
 
     trainer = Trainer(
@@ -97,8 +111,9 @@ def train(cfg):
         data_collator=collate_fn,
         compute_metrics=lambda x :compute_metrics(x, metric),
         train_dataset=prepared_ds["train"],
-        eval_dataset=prepared_ds["test"],
+        eval_dataset=prepared_ds[cfg.data.test_name],
         tokenizer=processor,
+        
     )
 
     train_results = trainer.train()
