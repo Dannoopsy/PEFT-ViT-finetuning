@@ -7,5 +7,5 @@
 *DS_Store
 *MACOSX*
 outputs/
-wandb/
+*wandb*
 visual/
