@@ -122,6 +122,6 @@ def train(cfg):
     trainer.save_metrics("train", train_results.metrics)
     trainer.save_state()
 
-    metrics = trainer.evaluate(prepared_ds['test'])
+    metrics = trainer.evaluate(prepared_ds[cfg.data.test_name])
     trainer.log_metrics("eval", metrics)
     trainer.save_metrics("eval", metrics)

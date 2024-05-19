@@ -1,4 +1,3 @@
-python ../finetuning/main.py peft=lora16 data=rvl_cdip
-python ../finetuning/main.py peft=ft data=rvl_cdip
-python ../finetuning/main.py peft=freeze data=rvl_cdip
-python ../finetuning/main.py peft=lora32 data=rvl_cdip
+python ../finetuning/main.py peft=dora16 data=tobacco3482 training.epochs=20
+python ../finetuning/main.py peft=dora16 data=cifar10 training.epochs=10
+python ../finetuning/main.py peft=dora16 data=rvl_cdip training.epochs=2
